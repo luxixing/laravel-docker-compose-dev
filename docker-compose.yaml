@@ -1,0 +1,50 @@
+version: '3'
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    ports:
+      - ${NGINX_PORT}:80
+    volumes:
+      - ${SRC_ROOT}:${APP_ROOT}
+    #environment:
+      #- NGINX_SERVER_NAME=${NGINX_SERVER_NAME}
+    networks:
+      - laravel
+    depends_on:
+      - php
+  php:
+    build:
+      context: .
+      dockerfile: ./php/Dockerfile
+    volumes:
+      - ${SRC_ROOT}:${APP_ROOT}
+    #environment:
+      #- APP_ROOT=${APP_ROOT}
+    networks:
+      - laravel
+    depends_on:
+      - mysql
+      - redis
+  mysql:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - ${MYSQL_EXPOSE_PORT}:3306
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    networks:
+      - laravel
+  redis:
+    image: redis:6.2-alpine
+    ports:
+      - ${REDIS_EXPOSE_PORT}:6379
+    networks:
+      - laravel
+networks:
+  laravel:
